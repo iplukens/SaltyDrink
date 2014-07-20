@@ -11,7 +11,6 @@ public class SeleniumPoller implements Runnable{
 	private static SeleniumPoller instance;
 	
 	private SeleniumPoller(){
-		instance.run();
 	}
 	
 	public static SeleniumPoller getInstance(){
