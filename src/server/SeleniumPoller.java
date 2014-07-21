@@ -5,10 +5,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
-public class SeleniumPoller implements Runnable{
+public class SeleniumPoller extends Thread implements Runnable{
 	
 	private Result result = Result.CLOSED;
 	private static SeleniumPoller instance;
+	private boolean running = true;
+	private WebDriver driver = new FirefoxDriver();
 	
 	private SeleniumPoller(){
 	}
@@ -21,10 +23,9 @@ public class SeleniumPoller implements Runnable{
 	}
 	
 	public void run() {
-		WebDriver driver = new FirefoxDriver();
 		driver.get("http://www.saltybet.com");
 		WebElement status = driver.findElement(By.xpath("//*[@id='betstatus']"));
-		while(true){
+		while(running){
 			updateResult(status.getText());
 			try {
 				Thread.sleep(2000);
@@ -51,6 +52,11 @@ public class SeleniumPoller implements Runnable{
 		else if (!result.equals(Result.TIE)){
 			setResult(Result.TIE);
 		}
+	}
+	
+	public void shutdown(){
+		running = false;
+		driver.quit();
 	}
 
 	public Result getResult() {
