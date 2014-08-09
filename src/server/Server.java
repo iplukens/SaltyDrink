@@ -3,32 +3,39 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
-import client.ClientThread;
+import client.ConnectionToClient;
 
 public class Server {
 
 	private static ServerSocket serverSocket = null;
 	private static int state;
-	
+	private static List<ConnectionToClient> clients;
+
 	/** Bind Server to default port. */
-	public void bind(int serverPort) throws IOException {
+	public static void bind(int serverPort) throws IOException {
 		serverSocket = new ServerSocket(serverPort);
-		state = 1; 
+		state = 1;
 	}
-	
-	public static void main(String args[]) throws IOException{
+
+	public static void main(String args[]) throws IOException {
+		clients = new ArrayList<ConnectionToClient>();
 		state = 1;
 		SeleniumPoller poller = SeleniumPoller.getInstance();
 		poller.start();
+		bind(11111);
 		while (state == 1) {
-			try{
+			try {
 				Socket client = serverSocket.accept();
-				new ClientThread(client);
-			} catch (Exception e){
+				ConnectionToClient connection = new ConnectionToClient(client);
+				clients.add(connection);
+				connection.start();
+			} catch (Exception e) {
 				System.out.println("Connection failed");
 			}
-		} 
+		}
 		shutdown();
 	}
 
@@ -40,5 +47,20 @@ public class Server {
 			state = 0;
 		}
 	}
-	
+
+	public void remove(ConnectionToClient client) {
+		clients.remove(client);
+	}
+
+	/**
+	 * sends updates to every client
+	 * 
+	 * @param message
+	 */
+	public static void pushUpdate(Object message) {
+		for (ConnectionToClient client : clients) {
+			client.send(message);
+		}
+	}
+
 }
