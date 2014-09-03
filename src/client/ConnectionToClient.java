@@ -9,7 +9,6 @@ import server.Server;
 
 public class ConnectionToClient extends Thread {
 
-	private Server server;
 	private Socket client;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
@@ -17,25 +16,24 @@ public class ConnectionToClient extends Thread {
 
 	public ConnectionToClient(Socket client) throws IOException {
 		in = new ObjectInputStream(client.getInputStream());
-		out = new ObjectOutputStream(client.getOutputStream());
+		out = new ObjectOutputStream(client.getOutputStream());		
 		handler = new MessageHandler();
 		this.client = client;
 	}
 
 	public void run() {
+		System.out.println("Client connected.");
 		Object message;
 		try {
-			while ((message = in.readObject()) != null) {
+			while ((message = MessageHandler.extractMessage(in, "terminator")) != null) {
 				System.out.println(message);
 				Object response = handler.process(message);
 				send(response);
 			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e){
 			e.printStackTrace();
 		}
-		server.remove(this);
+		Server.remove(this);
 		try {
 			in.close();
 			out.close();

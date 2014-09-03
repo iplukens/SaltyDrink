@@ -36,11 +36,12 @@ public class Server {
 				System.out.println("Connection failed");
 			}
 		}
+		poller.shutdown();
 		shutdown();
 	}
 
 	/** Shutdown the server. */
-	public static void shutdown() throws IOException {
+	public static void shutdown() throws IOException {		
 		if (serverSocket != null) {
 			serverSocket.close();
 			serverSocket = null;
@@ -48,7 +49,7 @@ public class Server {
 		}
 	}
 
-	public void remove(ConnectionToClient client) {
+	public static void remove(ConnectionToClient client) {
 		clients.remove(client);
 	}
 
