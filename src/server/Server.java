@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.simple.JSONObject;
+
 import client.ConnectionToClient;
 
 public class Server {
@@ -25,7 +27,8 @@ public class Server {
 		state = 1;
 		SeleniumPoller poller = SeleniumPoller.getInstance();
 		poller.start();
-		bind(11111);
+		bind(11112);
+		System.out.println("Accepting on port 11112");
 		while (state == 1) {
 			try {
 				Socket client = serverSocket.accept();
@@ -49,7 +52,7 @@ public class Server {
 		}
 	}
 
-	public static void remove(ConnectionToClient client) {
+	public synchronized static void remove(ConnectionToClient client) {
 		clients.remove(client);
 	}
 
@@ -58,9 +61,9 @@ public class Server {
 	 * 
 	 * @param message
 	 */
-	public static void pushUpdate(Object message) {
+	public synchronized static void pushUpdate(JSONObject message) {
 		for (ConnectionToClient client : clients) {
-			client.send(message);
+			client.send(message.toJSONString());
 		}
 	}
 

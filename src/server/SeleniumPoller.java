@@ -1,5 +1,6 @@
 package server;
 
+import org.json.simple.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -71,7 +72,15 @@ public class SeleniumPoller extends Thread implements Runnable {
 	public void setResult(Result result) {
 		System.out.println(result);
 		this.result = result;
-		Server.pushUpdate(result.toString());
+		Server.pushUpdate(createRequest());
+	}
+	
+	@SuppressWarnings("unchecked")
+	public JSONObject createRequest() {
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("type", "RESULT");
+		jsonObject.put("result", result.toString());
+		return jsonObject;
 	}
 
 }

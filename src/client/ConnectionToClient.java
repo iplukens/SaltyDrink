@@ -5,6 +5,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import org.json.JSONObject;
+
+import messages.MessageHandler;
 import server.Server;
 
 public class ConnectionToClient extends Thread {
@@ -22,17 +25,18 @@ public class ConnectionToClient extends Thread {
 	}
 
 	public void run() {
-		System.out.println("Client connected.");
+		System.out.println("Client connected. " + client.getRemoteSocketAddress().toString());
 		Object message;
 		try {
 			while ((message = MessageHandler.extractMessage(in, "terminator")) != null) {
 				System.out.println(message);
-				Object response = handler.process(message);
-				send(response);
+				JSONObject response = handler.process(message);
+				send(response.toString());
 			}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
+		System.out.println("Removing client: " + client.getRemoteSocketAddress().toString());
 		Server.remove(this);
 		try {
 			in.close();
