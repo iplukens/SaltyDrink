@@ -1,6 +1,6 @@
 package server;
 
-public enum Result {
+public enum BetStatus {
 	OPEN,
 	CLOSED,
 	RED_WINS,

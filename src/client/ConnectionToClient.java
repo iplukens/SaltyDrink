@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.UUID;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import messages.MessageHandler;
@@ -16,27 +18,33 @@ public class ConnectionToClient extends Thread {
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 	private MessageHandler handler;
+	private String token;
 
-	public ConnectionToClient(Socket client) throws IOException {
+	public ConnectionToClient(String clientId, Socket client)
+			throws IOException {
 		in = new ObjectInputStream(client.getInputStream());
-		out = new ObjectOutputStream(client.getOutputStream());		
+		out = new ObjectOutputStream(client.getOutputStream());
 		handler = new MessageHandler();
 		this.client = client;
+		token = clientId;
 	}
 
 	public void run() {
-		System.out.println("Client connected. " + client.getRemoteSocketAddress().toString());
+		System.out.println("Client connected. "
+				+ client.getRemoteSocketAddress().toString());
+		send(tokenResponse().toString());
 		Object message;
 		try {
-			while ((message = MessageHandler.extractMessage(in, "terminator")) != null) {
+			while ((message = MessageHandler.extractMessage(in)) != null) {
 				System.out.println(message);
-				JSONObject response = handler.process(message);
+				JSONObject response = handler.process(token, message);
 				send(response.toString());
 			}
-		} catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("Removing client: " + client.getRemoteSocketAddress().toString());
+		System.out.println("Removing client: "
+				+ client.getRemoteSocketAddress().toString());
 		Server.remove(this);
 		try {
 			in.close();
@@ -47,17 +55,34 @@ public class ConnectionToClient extends Thread {
 		}
 	}
 
+	private Object tokenResponse() {
+		System.out.println("Sending client their token...");
+		JSONObject response = new JSONObject();
+		try {
+			response.put("type", "TOKEN");
+			response.put("token", token);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}	
+		return response;
+	}
+
 	/**
 	 * sends a message to the client
 	 * 
 	 * @param message
 	 */
 	public void send(Object message) {
+		System.out.println("Sending: " + message + " to client " + token);
 		try {
 			out.writeObject(message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public String getToken() {
+		return token;
 	}
 
 }

@@ -8,7 +8,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 
 public class SeleniumPoller extends Thread implements Runnable {
 
-	private Result result = Result.CLOSED;
+	private BetStatus betStatus = BetStatus.CLOSED;
 	private static SeleniumPoller instance;
 	private boolean running = true;
 	private WebDriver driver = new FirefoxDriver();
@@ -28,7 +28,7 @@ public class SeleniumPoller extends Thread implements Runnable {
 		WebElement status = driver
 				.findElement(By.xpath("//*[@id='betstatus']"));
 		while (running) {
-			updateResult(status.getText());
+			updateBetStatus(status.getText());
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
@@ -37,26 +37,27 @@ public class SeleniumPoller extends Thread implements Runnable {
 		}
 	}
 
-	private void updateResult(String resultText) {
+	private void updateBetStatus(String betStatusText) {
 		// TODO: notify some other thread when result changes
-		if (resultText.equals("Bets are OPEN!")) {
-			if (!result.equals(Result.OPEN)) {
-				setResult(Result.OPEN);
+		if (betStatusText.equals("Bets are OPEN!")) {
+			if (!betStatus.equals(BetStatus.OPEN)) {
+				Server.generateMatchups();
+				setResult(BetStatus.OPEN);
 			}
-		} else if (resultText.equals("Bets are locked until the next match.")) {
-			if (!result.equals(Result.CLOSED)) {
-				setResult(Result.CLOSED);
+		} else if (betStatusText.equals("Bets are locked until the next match.")) {
+			if (!betStatus.equals(BetStatus.CLOSED)) {
+				setResult(BetStatus.CLOSED);
 			}
-		} else if (resultText.contains(" wins! Payouts to Team Blue.")) {
-			if (!result.equals(Result.BLUE_WINS)) {
-				setResult(Result.BLUE_WINS);
+		} else if (betStatusText.contains(" wins! Payouts to Team Blue.")) {
+			if (!betStatus.equals(BetStatus.BLUE_WINS)) {
+				setResult(BetStatus.BLUE_WINS);
 			}
-		} else if (resultText.contains(" wins! Payouts to Team Red.")) {
-			if (!result.equals(Result.RED_WINS)) {
-				setResult(Result.RED_WINS);
+		} else if (betStatusText.contains(" wins! Payouts to Team Red.")) {
+			if (!betStatus.equals(BetStatus.RED_WINS)) {
+				setResult(BetStatus.RED_WINS);
 			}
-		} else if (!result.equals(Result.TIE)) {
-			setResult(Result.TIE);
+		} else if (!betStatus.equals(BetStatus.TIE)) {
+			setResult(BetStatus.TIE);
 		}
 	}
 
@@ -65,13 +66,13 @@ public class SeleniumPoller extends Thread implements Runnable {
 		driver.quit();
 	}
 
-	public Result getResult() {
-		return result;
+	public BetStatus getBetStatus() {
+		return betStatus;
 	}
 
-	public void setResult(Result result) {
-		System.out.println(result);
-		this.result = result;
+	public void setResult(BetStatus betStatus) {
+		System.out.println(betStatus);
+		this.betStatus = betStatus;
 		Server.pushUpdate(createRequest());
 	}
 	
@@ -79,7 +80,7 @@ public class SeleniumPoller extends Thread implements Runnable {
 	public JSONObject createRequest() {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("type", "RESULT");
-		jsonObject.put("result", result.toString());
+		jsonObject.put("betStatus", betStatus.toString());
 		return jsonObject;
 	}
 
