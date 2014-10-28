@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 
-import server.SeleniumPoller;
 import server.Server;
 import client.RequestType;
 
@@ -30,68 +31,72 @@ public class MessageHandler {
 	}
 
 	public JSONObject process(String token, Object message) throws Exception {
-		JSONObject jsonObject = null;		
-		try {
-			jsonObject = new JSONObject((String) message);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		JSONParser jsonParser = new JSONParser();
+		JSONObject jsonObject = (JSONObject) jsonParser.parse((String) message);
 		RequestType type = null;
 		String recievedToken = (String) jsonObject.get("token");
 		if (!token.equals(recievedToken)) {
 			throw new Exception("Client token did not match.  Expected: "
 					+ token + " but got " + recievedToken);
 		}
-		try {
-			type = RequestType.valueOf((String) jsonObject.get("type"));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		type = RequestType.valueOf((String) jsonObject.get("type"));
+
 		switch (type) {
 		case ROOM:
 			return processConnect(token, jsonObject);
 		case BET:
 			return processBid(token, jsonObject);
+		case NAME_UPDATE:
+			return processNameChange(token, jsonObject);
+		case SHUTDOWN:
+			return processShutdown(token, jsonObject);
 		default:
 			return null;
 		}
 	}
 
+	private JSONObject processShutdown(String token, JSONObject jsonObject) {
+		if (token.equals(Server.getAdminToken())) {
+			try {
+				Server.shutdown();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	private JSONObject processNameChange(String token, JSONObject jsonObject) {
+		System.out.println("process name change...");
+		System.out.println(jsonObject);
+		Integer gameId = null;
+		gameId = (Integer) jsonObject.get("gameId");
+		Server.updateGame(gameId, (String) jsonObject.get("playerId"), token);
+		return Server.getRoomState(gameId);
+	}
+
+	@SuppressWarnings("unchecked")
 	private JSONObject processConnect(String token, JSONObject jsonObject)
 			throws JSONException, Exception {
 		System.out.println("processing connect request...");
 		System.out.println(jsonObject);
 		JSONObject response = new JSONObject();
 		boolean addResult = false;
-		Integer gameId = null;
-		try {
-			gameId = (Integer) jsonObject.get("gameId");
-			addResult = Server.addPlayerToGame(gameId,
-					(String) jsonObject.getString("playerId"), token);
-		} catch (JSONException e1) {
-			e1.printStackTrace();
-		}
+		Long gameId = null;
+		gameId = (long) jsonObject.get("gameId");
+		addResult = Server.addPlayerToGame(gameId,
+				(String) jsonObject.get("playerId"), token);
 		if (!addResult) {
-			try {
-				response.put("type", "ROOM_STATE");
-				response.put("error", "join room failed!");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+			response.put("type", "ROOM_STATE");
+			response.put("error", "join room failed!");
 		} else {
-			try {
-				response.put("type", "ROOM_STATE");
-				response.put("playerSet", Server.getPlayerSet(gameId));
-				response.put("betStatus", SeleniumPoller.getInstance()
-						.getBetStatus());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+			response = Server.getRoomState(gameId);
 		}
 		System.out.println("Connect Response: " + response);
 		return response;
 	}
 
+	@SuppressWarnings("unchecked")
 	private JSONObject processBid(String token, JSONObject jsonObject) {
 		System.out.println("processing bid...");
 		System.out.println(jsonObject);
@@ -105,11 +110,7 @@ public class MessageHandler {
 			e.printStackTrace();
 		}
 		JSONObject response = new JSONObject();
-		try {
-			response.put("type", "BID_RESPONSE");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		response.put("type", "BID_RESPONSE");
 		return response;
 	}
 }

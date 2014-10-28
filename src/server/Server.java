@@ -17,11 +17,14 @@ import client.ConnectionToClient;
 
 public class Server {
 
+	// private static Logger logger = Logger.getLogger(Server.class);
+
 	private static ServerSocket serverSocket = null;
 	private static int state;
 	private static Map<String, ConnectionToClient> clients;
 	private static Map<Long, GameState> games;
 	private static long lastId;
+	private static final String adminToken = "SUPERsecretADMINtokenTHATisENCRYPTEDprobably";
 
 	/** Bind Server to default port. */
 	public static void bind(int serverPort) throws IOException {
@@ -30,6 +33,9 @@ public class Server {
 	}
 
 	public static void main(String args[]) throws IOException {
+		// System.setProperty("selenium.LOGGER", "selenium.txt");
+		// configure logger
+
 		clients = new HashMap<String, ConnectionToClient>();
 		lastId = 0;
 		games = new HashMap<>();
@@ -38,6 +44,7 @@ public class Server {
 		addPlayerToGame(id, "LaserOrange", "token1");
 		addPlayerToGame(id, "Jem and the Holograms", "token2");
 		addPlayerToGame(id, "The Penis", "token3");
+		addPlayerToGame(id, "Chrisgopher McAngles", "token4");
 		state = 1;
 		SeleniumPoller poller = SeleniumPoller.getInstance();
 		poller.start();
@@ -137,6 +144,18 @@ public class Server {
 		for (Long id : games.keySet()) {
 			games.get(id).generateMatchups();
 		}
+	}
+
+	public static void updateGame(Integer gameId, String playerId, String token) {
+		games.get(gameId).updatePlayer(token, playerId);
+	}
+
+	public static JSONObject getRoomState(long gameId) {
+		return Server.getGame(gameId).getRoomStateResponse();
+	}
+
+	public static String getAdminToken() {
+		return adminToken;
 	}
 
 }

@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.UUID;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import messages.MessageHandler;
+
+import org.json.simple.JSONObject;
+
 import server.Server;
 
 public class ConnectionToClient extends Thread {
@@ -55,15 +54,12 @@ public class ConnectionToClient extends Thread {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private Object tokenResponse() {
 		System.out.println("Sending client their token...");
 		JSONObject response = new JSONObject();
-		try {
-			response.put("type", "TOKEN");
-			response.put("token", token);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}	
+		response.put("type", "TOKEN");
+		response.put("token", token);
 		return response;
 	}
 

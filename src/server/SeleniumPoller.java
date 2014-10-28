@@ -7,7 +7,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 public class SeleniumPoller extends Thread implements Runnable {
-
+	
 	private BetStatus betStatus = BetStatus.CLOSED;
 	private static SeleniumPoller instance;
 	private boolean running = true;
