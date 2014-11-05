@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.json.simple.JSONObject;
@@ -128,7 +128,7 @@ public class Server {
 		}
 	}
 
-	public synchronized static Set<String> getPlayerSet(long id) {
+	public synchronized static List<String> getPlayerSet(long id) {
 		return games.get(id).getPlayerNames();
 	}
 
@@ -146,7 +146,7 @@ public class Server {
 		}
 	}
 
-	public static void updateGame(Integer gameId, String playerId, String token) {
+	public static void updateGame(Long gameId, String playerId, String token) {
 		games.get(gameId).updatePlayer(token, playerId);
 	}
 

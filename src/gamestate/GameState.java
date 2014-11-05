@@ -26,8 +26,8 @@ public class GameState {
 		roundsPlayed = 0;
 	}
 
-	public Set<String> getPlayerNames() {
-		Set<String> result = new HashSet<>();
+	public List<String> getPlayerNames() {
+		List<String> result = new ArrayList<>();
 		for (String key : players.keySet()) {
 			result.add(players.get(key).getPlayerName());
 		}
@@ -162,7 +162,7 @@ public class GameState {
 		JSONObject response = new JSONObject();
 		response.put("type", "ROOM_STATE");
 		response.put("playerSet", getPlayerNames());
-		response.put("betStatus", SeleniumPoller.getInstance().getBetStatus());
+		response.put("betStatus", SeleniumPoller.getInstance().getBetStatus());		
 		return response;
 	}
 	

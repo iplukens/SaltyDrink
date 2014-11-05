@@ -69,8 +69,8 @@ public class MessageHandler {
 	private JSONObject processNameChange(String token, JSONObject jsonObject) {
 		System.out.println("process name change...");
 		System.out.println(jsonObject);
-		Integer gameId = null;
-		gameId = (Integer) jsonObject.get("gameId");
+		Long gameId = null;
+		gameId = (long) jsonObject.get("gameId");
 		Server.updateGame(gameId, (String) jsonObject.get("playerId"), token);
 		return Server.getRoomState(gameId);
 	}
