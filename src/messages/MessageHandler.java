@@ -102,8 +102,8 @@ public class MessageHandler {
 		System.out.println(jsonObject);
 		try {
 			String betColor = (String) jsonObject.get("betColor");
-			Integer betAmount = (Integer) jsonObject.get("betAmount");
-			Integer gameId = (Integer) jsonObject.get("gameId");
+			Long betAmount = (Long) jsonObject.get("betAmount");
+			Long gameId = (Long) jsonObject.get("gameId");
 			GameState game = Server.getGame(gameId);
 			game.addBid(token, betColor, betAmount);
 		} catch (Exception e) {

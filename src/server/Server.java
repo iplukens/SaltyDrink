@@ -41,10 +41,10 @@ public class Server {
 		games = new HashMap<>();
 		int portNum = 11112;
 		long id = addNewGame();
-		addPlayerToGame(id, "LaserOrange", "token1");
-		addPlayerToGame(id, "Jem and the Holograms", "token2");
-		addPlayerToGame(id, "The Penis", "token3");
-		addPlayerToGame(id, "Chrisgopher McAngles", "token4");
+		// addPlayerToGame(id, "LaserOrange", "token1");
+		// addPlayerToGame(id, "Jem and the Holograms", "token2");
+		// addPlayerToGame(id, "The Penis", "token3");
+		// addPlayerToGame(id, "Chrisgopher McAngles", "token4");
 		state = 1;
 		SeleniumPoller poller = SeleniumPoller.getInstance();
 		poller.start();

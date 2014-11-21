@@ -51,9 +51,9 @@ public class GameState {
 		players.remove(playerId);
 	}
 
-	public void addBid(String token, String betColor, int betAmount) {
+	public void addBid(String token, String betColor, long betAmount) {
 		Player player = players.get(token);
-		player.setCurrentBet(new Bet(betColor, betAmount));
+		player.setCurrentBet(new Bet(betColor, (int) betAmount));
 		Player opponent = players.get(player.getCurrentOpponentToken());
 		if (opponent == null || opponent.getToken() == SALTY_BOT_TOKEN) {
 			sendSALTYDROIDResponse(token);
@@ -129,6 +129,7 @@ public class GameState {
 	private void sendOpponentBidResponse(String playerToken, Player opponent) {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("type", "OPPONENT_BID");
+		jsonObject.put("name", opponent.getPlayerName());
 		jsonObject.put("color", opponent.getCurrentBet().getColor());
 		jsonObject.put("bidAmount", opponent.getCurrentBet().getAmount());
 		Server.sendToClient(playerToken, jsonObject);
